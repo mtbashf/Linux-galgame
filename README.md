@@ -92,28 +92,153 @@ python launcher.py
 
 ---
 
-## 5. 打包建议（PyInstaller / AppImage）
+## 5. 打包建议（新手向，含多发行版依赖）
 
-本项目仅使用标准库，结构简单，方便打包。
+下面按“**先本地运行成功 -> 再打包**”的顺序来，适合第一次接触打包的用户。
 
-### 5.1 PyInstaller（先打包）
+### 5.1 打包前先确认基础依赖
+
+> 目的：避免打包后才发现 `tkinter` 缺失。
+
+#### Arch Linux
 
 ```bash
-pip install pyinstaller
-pyinstaller --onefile --windowed launcher.py
+sudo pacman -S --needed python tk python-pip
 ```
 
-输出在 `dist/launcher`。
+#### Debian / Ubuntu / Linux Mint
 
-### 5.2 再制作 AppImage（示意流程）
+```bash
+sudo apt update
+sudo apt install -y python3 python3-pip python3-tk tk
+```
 
-可使用 `python-appimage` 或 AppImage 工具链，将 `dist/launcher` 放入 AppDir 后生成 AppImage。
+#### Fedora
 
-示意（实际命令按你选择的工具调整）：
+```bash
+sudo dnf install -y python3 python3-pip python3-tkinter tk
+```
 
-1. 准备 `AppDir/usr/bin/launcher`
-2. 放置 `.desktop` 与图标
-3. 运行打包工具生成 `LinuxGalgameLauncher-x86_64.AppImage`
+#### openSUSE Tumbleweed / Leap
+
+```bash
+sudo zypper install -y python3 python3-pip python3-tk tk
+```
+
+#### 验证 Tk 是否可用（所有发行版通用）
+
+```bash
+python3 -m tkinter
+```
+
+如果能弹出小窗口，说明 GUI 依赖正常。
+
+---
+
+### 5.2 安装 PyInstaller
+
+推荐使用 `pipx`（不污染系统 Python），没有 `pipx` 也可以直接用 `pip`。
+
+#### 方式 A：pipx（推荐）
+
+```bash
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+pipx install pyinstaller
+```
+
+#### 方式 B：pip（简单直接）
+
+```bash
+python3 -m pip install --user pyinstaller
+```
+
+---
+
+### 5.3 执行打包（生成单文件可执行程序）
+
+在项目根目录执行：
+
+```bash
+pyinstaller --onefile --windowed --name linux-galgame launcher.py
+```
+
+如果你是用 `pip --user` 安装，可能需要：
+
+```bash
+python3 -m PyInstaller --onefile --windowed --name linux-galgame launcher.py
+```
+
+打包后重点看两个目录：
+
+- `dist/linux-galgame`：最终可执行文件
+- `build/`：中间构建文件（可删除）
+
+先直接运行打包结果测试：
+
+```bash
+./dist/linux-galgame
+```
+
+---
+
+### 5.4 打包为 AppImage（面向分发）
+
+最稳妥流程是：**先用 PyInstaller 得到可执行文件，再封装 AppImage**。
+
+#### 步骤 1：准备 AppDir 结构
+
+```bash
+mkdir -p AppDir/usr/bin
+cp dist/linux-galgame AppDir/usr/bin/
+chmod +x AppDir/usr/bin/linux-galgame
+```
+
+#### 步骤 2：创建 desktop 文件
+
+创建 `AppDir/linux-galgame.desktop`，内容如下：
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=Linux Galgame Launcher
+Exec=linux-galgame
+Icon=linux-galgame
+Categories=Game;
+Terminal=false
+```
+
+#### 步骤 3：准备图标（可选但推荐）
+
+将你的图标文件放到：
+
+- `AppDir/linux-galgame.png`（建议 256x256）
+
+#### 步骤 4：使用 appimagetool 生成 AppImage
+
+先下载 `appimagetool`（按你的架构选择 x86_64 / aarch64），然后执行：
+
+```bash
+chmod +x appimagetool-*.AppImage
+./appimagetool-*.AppImage AppDir
+```
+
+成功后会在当前目录生成类似：
+
+- `Linux_Galgame_Launcher-x86_64.AppImage`
+
+---
+
+### 5.5 常见打包问题（小白高频）
+
+1. **命令找不到 `pyinstaller`**  
+   用 `python3 -m PyInstaller ...` 运行，或确认 `~/.local/bin` 在 `PATH` 中。
+
+2. **运行打包产物仍报 Tk 缺失**  
+   说明构建机环境本身缺 Tk，请先安装 `tk` 再重新打包。
+
+3. **在另一台发行版无法运行**  
+   尽量在较老、兼容性更高的环境构建（或使用容器/CI 构建），并优先使用静态运行时。
 
 ---
 
