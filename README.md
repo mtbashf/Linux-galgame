@@ -139,3 +139,38 @@ pyinstaller --onefile --windowed launcher.py
 - 若扫描目录很大，程序会显示“扫描中...”，并在后台线程中完成扫描。
 - 若关闭窗口时仍在下载，会询问是否强制退出。
 - 若启动失败，请先检查：运行时路径、模板变量、文件权限。
+
+---
+
+## 8. 常见报错：`ImportError: libtk8.6.so`
+
+如果运行 `python launcher.py` 出现：
+
+```text
+ImportError: libtk8.6.so: cannot open shared object file: No such file or directory
+```
+
+说明当前 Python 环境找不到 Tk 动态库（`tkinter` 依赖系统 `tk`）。
+
+### Arch Linux
+
+```bash
+sudo pacman -S tk
+```
+
+然后验证：
+
+```bash
+python -m tkinter
+```
+
+如果能弹出一个小窗口，说明 Tk 可用。
+
+### 其他发行版（参考）
+
+- Debian/Ubuntu：`sudo apt install python3-tk tk`
+- Fedora：`sudo dnf install python3-tkinter tk`
+
+### 如果你使用 pyenv/conda/自编译 Python
+
+你当前的 Python 解释器可能没有正确链接系统 Tk。请确保该解释器安装了 Tk 支持，或切换到系统 Python 运行本项目。
