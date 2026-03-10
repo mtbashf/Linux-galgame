@@ -8,6 +8,7 @@
 ## 功能概览
 
 - 递归扫描游戏目录中的 `.xp3` 文件。
+- 内置日志系统（`~/.local/share/linux-galgame/launcher.log`，自动滚动）。
 - 启动模板可配置，支持变量：`{xp3}`、`{game_dir}`、`{game_name}`、`{runtime}`。
 - 支持下载运行时到：`~/.local/share/linux-galgame/runtime/`。
 - 支持 SHA256 校验（推荐填写）。
@@ -21,6 +22,10 @@
 ## 1. 依赖
 
 仅需 Python 和 Tkinter（标准库）。
+
+可选依赖：
+- `Pillow`：背景图缩放支持
+- `sv-ttk`：更现代的 ttk 主题（未安装会自动回退）
 
 Arch Linux 示例：
 
